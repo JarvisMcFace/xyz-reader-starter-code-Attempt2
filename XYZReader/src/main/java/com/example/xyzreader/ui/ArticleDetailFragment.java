@@ -11,7 +11,10 @@ import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.ShareCompat;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
+import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
@@ -50,6 +53,7 @@ public class ArticleDetailFragment extends Fragment
     private int mMutedColor = 0xFF333333;
     private AppBarLayout mAppBarLayout;
     private CoordinatorLayout mCoordinatorLayout;
+    private Toolbar toolbar;
 
     private View mPhotoContainerView;
     private ImageView mPhotoView;
@@ -60,7 +64,7 @@ public class ArticleDetailFragment extends Fragment
     // Use default locale format
     private SimpleDateFormat outputFormat = new SimpleDateFormat();
     // Most time functions can only handle 1902 - 2037
-    private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2,1,1);
+    private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2, 1, 1);
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -110,6 +114,15 @@ public class ArticleDetailFragment extends Fragment
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
         mCoordinatorLayout = (CoordinatorLayout) mRootView.findViewById(R.id.root_coordinator_lyt);
         mAppBarLayout = (AppBarLayout) mRootView.findViewById(R.id.appbar);
+
+        toolbar = (Toolbar) mRootView.findViewById(R.id.toolbar);
+
+        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setHomeButtonEnabled(true);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+        ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
 
 
         mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
@@ -199,7 +212,7 @@ public class ArticleDetailFragment extends Fragment
         } else {
             mRootView.setVisibility(View.GONE);
             titleView.setText("N/A");
-            bylineView.setText("N/A" );
+            bylineView.setText("N/A");
             bodyView.setText("N/A");
         }
     }
