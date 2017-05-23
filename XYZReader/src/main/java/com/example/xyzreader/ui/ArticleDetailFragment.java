@@ -8,6 +8,8 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.app.ShareCompat;
 import android.support.v7.graphics.Palette;
 import android.text.Html;
@@ -46,8 +48,8 @@ public class ArticleDetailFragment extends Fragment
     private long mItemId;
     private View mRootView;
     private int mMutedColor = 0xFF333333;
-//    private AppBarLayout mAppBarLayout;
-//    private CoordinatorLayout mCoordinatorLayout;
+    private AppBarLayout mAppBarLayout;
+    private CoordinatorLayout mCoordinatorLayout;
 
     private View mPhotoContainerView;
     private ImageView mPhotoView;
@@ -106,10 +108,9 @@ public class ArticleDetailFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
-//        mCoordinatorLayout = (CoordinatorLayout)
-//                mRootView.findViewById(R.id.root_coordinator_lyt);
-//
-//        mAppBarLayout = (AppBarLayout) mRootView.findViewById(R.id.appbar);
+        mCoordinatorLayout = (CoordinatorLayout) mRootView.findViewById(R.id.root_coordinator_lyt);
+        mAppBarLayout = (AppBarLayout) mRootView.findViewById(R.id.appbar);
+
 
         mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
         mPhotoContainerView = mRootView.findViewById(R.id.photo_container);
