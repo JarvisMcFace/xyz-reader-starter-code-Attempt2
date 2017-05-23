@@ -40,7 +40,7 @@ public class ArticleDetailFragment extends Fragment
     private static final String TAG = "ArticleDetailFragment";
 
     public static final String ARG_ITEM_ID = "item_id";
-    private static final float PARALLAX_FACTOR = 1.25f;
+//    private static final float PARALLAX_FACTOR = 1.25f;
 
     private Cursor mCursor;
     private long mItemId;
@@ -78,13 +78,13 @@ public class ArticleDetailFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             mItemId = getArguments().getLong(ARG_ITEM_ID);
         }
 
         mIsCard = getResources().getBoolean(R.bool.detail_is_card);
-        setHasOptionsMenu(true);
     }
 
     public ArticleDetailActivity getActivityCast() {
