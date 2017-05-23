@@ -1,4 +1,9 @@
 <resources>
+
+    <dimen name="material">16dp</dimen>
+    <dimen name="material_half">4dp</dimen>
+    <dimen name="material_primary_title_top_margin">24dp</dimen>
+
     <!-- detail -->
     <dimen name="detail_title_text_size">32sp</dimen>
     <dimen name="detail_body_text_size">22sp</dimen>
