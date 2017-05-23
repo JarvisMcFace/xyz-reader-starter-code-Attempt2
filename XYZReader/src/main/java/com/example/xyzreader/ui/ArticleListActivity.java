@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -19,13 +20,17 @@ import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
 import com.example.xyzreader.data.UpdaterService;
 
+import java.lang.ref.WeakReference;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -38,7 +43,7 @@ import java.util.GregorianCalendar;
  * activity presents a grid of items as cards.
  */
 public class ArticleListActivity extends AppCompatActivity
-        implements LoaderManager.LoaderCallbacks<Cursor> {
+        implements LoaderManager.LoaderCallbacks<Cursor>, SelectedArticleCallback{
 
     private static final String TAG = ArticleListActivity.class.toString();
     private Toolbar mToolbar;
@@ -113,14 +118,17 @@ public class ArticleListActivity extends AppCompatActivity
         return ArticleLoader.newAllArticlesInstance(this);
     }
 
+
     @Override
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        Adapter adapter = new Adapter(cursor);
+
+        WeakReference<Context> contextWeakReference = new WeakReference<Context>(this);
+        WeakReference<SelectedArticleCallback> callBackWeakReference = new WeakReference<SelectedArticleCallback>(this);
+        Adapter adapter = new Adapter(callBackWeakReference, contextWeakReference, cursor);
         adapter.setHasStableIds(true);
         mRecyclerView.setAdapter(adapter);
         int columnCount = getResources().getInteger(R.integer.list_column_count);
-        StaggeredGridLayoutManager sglm =
-                new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
+        StaggeredGridLayoutManager sglm = new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(sglm);
     }
 
@@ -129,11 +137,22 @@ public class ArticleListActivity extends AppCompatActivity
         mRecyclerView.setAdapter(null);
     }
 
-    private class Adapter extends RecyclerView.Adapter<ViewHolder> {
-        private Cursor mCursor;
+    @Override
+    public void onSelectedArticle(Uri uri, long selectedArticle, View photo) {
 
-        public Adapter(Cursor cursor) {
-            mCursor = cursor;
+        Log.d(TAG, "David: " + "onSelectedArticle() called with: uri = [" + uri + "], selectedArticle = [" + selectedArticle + "], photo = [" + photo + "]");
+    }
+
+    private class Adapter extends RecyclerView.Adapter<ViewHolder> {
+
+        private Cursor mCursor;
+        private WeakReference<Context> contextWeakReference;
+        private WeakReference<SelectedArticleCallback> callBackWeakReference;
+
+        public Adapter(WeakReference<SelectedArticleCallback> callBackWeakReference, WeakReference<Context> contextWeakReference, Cursor cursor) {
+            this.mCursor = cursor;
+            this.contextWeakReference = contextWeakReference;
+            this.callBackWeakReference = callBackWeakReference;
         }
 
         @Override
@@ -167,6 +186,8 @@ public class ArticleListActivity extends AppCompatActivity
             }
         }
 
+
+
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
             mCursor.moveToPosition(position);
@@ -187,10 +208,18 @@ public class ArticleListActivity extends AppCompatActivity
                                 + "<br/>" + " by "
                                 + mCursor.getString(ArticleLoader.Query.AUTHOR)));
             }
-            holder.thumbnailView.setImageUrl(
-                    mCursor.getString(ArticleLoader.Query.THUMB_URL),
-                    ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader());
-            holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
+//            holder.thumbnailView.setImageUrl(
+//                    mCursor.getString(ArticleLoader.Query.THUMB_URL),
+//                    ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader());
+//            holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
+
+            String thumbnailURL = mCursor.getString(ArticleLoader.Query.THUMB_URL);
+
+            Glide.with(contextWeakReference.get())
+                    .load(thumbnailURL)
+                    .fitCenter()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(holder.thumbnailView);
         }
 
         @Override
@@ -200,13 +229,13 @@ public class ArticleListActivity extends AppCompatActivity
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public DynamicHeightNetworkImageView thumbnailView;
+        public ImageView thumbnailView;
         public TextView titleView;
         public TextView subtitleView;
 
         public ViewHolder(View view) {
             super(view);
-            thumbnailView = (DynamicHeightNetworkImageView) view.findViewById(R.id.thumbnail);
+            thumbnailView = (ImageView) view.findViewById(R.id.thumbnail);
             titleView = (TextView) view.findViewById(R.id.article_title);
             subtitleView = (TextView) view.findViewById(R.id.article_subtitle);
         }
