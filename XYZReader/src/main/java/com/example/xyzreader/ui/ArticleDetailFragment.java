@@ -23,8 +23,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.BitmapImageViewTarget;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 
@@ -187,24 +188,21 @@ public class ArticleDetailFragment extends Fragment
 
             }
             bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />")));
-            ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
-                    .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
-                        @Override
-                        public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
-                            Bitmap bitmap = imageContainer.getBitmap();
-                            if (bitmap != null) {
-                                Palette p = Palette.generate(bitmap, 12);
-                                mMutedColor = p.getDarkMutedColor(0xFF333333);
-                                mPhotoView.setImageBitmap(imageContainer.getBitmap());
-                                mRootView.findViewById(R.id.meta_bar)
-                                        .setBackgroundColor(mMutedColor);
-                            }
-                        }
+            String photoURL = mCursor.getString(ArticleLoader.Query.PHOTO_URL);
+            Glide.with(getActivity())
+                    .load(photoURL)
+                    .asBitmap()
+                    .fitCenter()
+                    .into(new BitmapImageViewTarget(mPhotoView) {
 
                         @Override
-                        public void onErrorResponse(VolleyError volleyError) {
-
+                        public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
+                            super.onResourceReady(bitmap, anim);
+                            Palette palette = Palette.from(bitmap).generate();
+                            mMutedColor = palette.getDarkMutedColor(0xFF333333);
+                            toolbar.setBackgroundColor(mMutedColor);
                         }
+
                     });
         } else {
             mRootView.setVisibility(View.GONE);
