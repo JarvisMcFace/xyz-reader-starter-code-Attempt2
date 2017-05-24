@@ -7,8 +7,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -49,6 +52,9 @@ public class ArticleListActivity extends AppCompatActivity
     private Toolbar mToolbar;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
+    private View emptyState;
+    private boolean hasNoNetworkConnectivity;
+    private CoordinatorLayout coordinatorLayout;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
     // Use default locale format
@@ -64,6 +70,8 @@ public class ArticleListActivity extends AppCompatActivity
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
+        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatolayout);
+
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
         mSwipeRefreshLayout.setColorSchemeColors(ContextCompat.getColor(this, R.color.theme_primary_dark));
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -72,7 +80,7 @@ public class ArticleListActivity extends AppCompatActivity
                 refresh();
             }
         });
-
+        emptyState = findViewById(R.id.empty_state);
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         getLoaderManager().initLoader(0, null, this);
 
@@ -82,6 +90,7 @@ public class ArticleListActivity extends AppCompatActivity
     }
 
     private void refresh() {
+        emptyState.setVisibility(View.GONE);
         startService(new Intent(this, UpdaterService.class));
     }
 
@@ -89,6 +98,7 @@ public class ArticleListActivity extends AppCompatActivity
     protected void onStart() {
         super.onStart();
         registerReceiver(mRefreshingReceiver, new IntentFilter(UpdaterService.BROADCAST_ACTION_STATE_CHANGE));
+        registerReceiver(mRefreshingReceiver, new IntentFilter(UpdaterService.EXTRA_NO_NETWORK));
     }
 
     @Override
@@ -106,8 +116,32 @@ public class ArticleListActivity extends AppCompatActivity
                 mIsRefreshing = intent.getBooleanExtra(UpdaterService.EXTRA_REFRESHING, false);
                 updateRefreshingUI();
             }
+            if (UpdaterService.EXTRA_NO_NETWORK.equals(intent.getAction())) {
+                hasNoNetworkConnectivity = intent.getBooleanExtra(UpdaterService.EXTRA_NO_NETWORK, false);
+
+                if (hasNoNetworkConnectivity) {
+                    showNoNetworkSnackBar();
+                    emptyState.setVisibility(View.VISIBLE);
+                } else {
+                    emptyState.setVisibility(View.GONE);
+                }
+            }
         }
     };
+
+    private void showNoNetworkSnackBar() {
+        Snackbar snackbar = Snackbar
+                .make(coordinatorLayout, getString(R.string.no_network_connection), Snackbar.LENGTH_INDEFINITE)
+                .setAction(getString(R.string.retry), new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        refresh();
+                    }
+                });
+        snackbar.setActionTextColor(Color.RED);
+        snackbar.show();
+    }
+
 
     private void updateRefreshingUI() {
         mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
