@@ -81,6 +81,9 @@ public class ArticleDetailFragment extends Fragment
         return fragment;
     }
 
+
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,9 +96,9 @@ public class ArticleDetailFragment extends Fragment
         mIsCard = getResources().getBoolean(R.bool.detail_is_card);
     }
 
-    public ArticleDetailActivity getActivityCast() {
-        return (ArticleDetailActivity) getActivity();
-    }
+//    public ArticleDetailActivity getActivityCast() {
+//        return (ArticleDetailActivity) getActivity();
+//    }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -112,13 +115,12 @@ public class ArticleDetailFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
-        mCoordinatorLayout = (CoordinatorLayout) mRootView.findViewById(R.id.root_coordinator_lyt);
-        mAppBarLayout = (AppBarLayout) mRootView.findViewById(R.id.appbar);
 
-        toolbar = (Toolbar) mRootView.findViewById(R.id.toolbar);
+        toolbar = (Toolbar) mRootView.findViewById(R.id.details_toolbar);
 
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (actionBar != null) {
+
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
