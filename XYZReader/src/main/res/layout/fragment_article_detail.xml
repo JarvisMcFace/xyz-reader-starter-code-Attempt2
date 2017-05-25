@@ -32,6 +32,7 @@
                 app:layout_collapseMode="parallax"/>
 
             <android.support.v7.widget.Toolbar
+                android:paddingTop="@dimen/material"
                 android:layout_marginTop="@dimen/material"
                 android:id="@+id/details_toolbar"
                 android:layout_width="match_parent"
@@ -43,11 +44,13 @@
                 app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
                 <LinearLayout
+
+                    android:layout_marginRight="@dimen/material"
                     android:layout_width="match_parent"
-                    android:layout_height="64dp"
+                    android:layout_height="80dp"
                     android:orientation="vertical">
 
-                    <TextView
+                    <com.example.xyzreader.ui.AutoResizeTextView
                         android:id="@+id/article_title"
                         style="@style/TextAppearance.AppCompat.Title"
                         android:layout_width="match_parent"
@@ -55,9 +58,10 @@
                         android:fontFamily="sans-serif-condensed"
                         android:textColor="@android:color/white"
                         android:textSize="@dimen/detail_title_text_size"
-                        android:fitsSystemWindows="true"
                         android:textStyle="bold"
+                        android:maxLines="1"
                         tools:text="Sample Title"/>
+
 
                     <TextView
                         android:id="@+id/article_byline"
@@ -113,7 +117,6 @@
         android:layout_gravity="bottom|end"
         android:layout_marginBottom="@dimen/fab_margin"
         android:layout_marginEnd="@dimen/fab_margin"
-        android:background="@drawable/add_fab_background"
         android:contentDescription="@string/action_share"
         android:elevation="@dimen/fab_elevation"
         android:padding="24dp"
