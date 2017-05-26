@@ -9,7 +9,9 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ShareCompat;
+import android.support.v4.widget.NestedScrollView;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
@@ -52,7 +54,8 @@ public class ArticleDetailFragment extends Fragment
     private AppBarLayout mAppBarLayout;
     private CoordinatorLayout mCoordinatorLayout;
     private Toolbar toolbar;
-
+    private ObservableScrollView observableScrollView;
+    private FloatingActionButton fab;
     private View mPhotoContainerView;
     private ImageView mPhotoView;
     private int mScrollY;
@@ -78,8 +81,6 @@ public class ArticleDetailFragment extends Fragment
         fragment.setArguments(arguments);
         return fragment;
     }
-
-
 
 
     @Override
@@ -115,23 +116,37 @@ public class ArticleDetailFragment extends Fragment
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
 
         toolbar = (Toolbar) mRootView.findViewById(R.id.details_toolbar);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener(){
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               getActivity().finish();
+                getActivity().finish();
             }
         });
 
         mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
         mPhotoContainerView = mRootView.findViewById(R.id.photo_container);
+        observableScrollView = (ObservableScrollView) mRootView.findViewById(R.id.scrollview);
 
-        mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
+
+        fab = (FloatingActionButton) mRootView.findViewById(R.id.share_fab);
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(getActivity())
                         .setType("text/plain")
                         .setText("Some sample text")
                         .getIntent(), getString(R.string.action_share)));
+            }
+        });
+
+        observableScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
+            @Override
+            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                if (scrollY > oldScrollY) {
+                    fab.hide();
+                } else {
+                    fab.show();
+                }
             }
         });
 
@@ -158,7 +173,7 @@ public class ArticleDetailFragment extends Fragment
         TextView titleView = (TextView) mRootView.findViewById(R.id.article_title);
         TextView bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
         bylineView.setMovementMethod(new LinkMovementMethod());
-        TextView bodyView = (TextView) mRootView.findViewById(R.id.article_body);
+        final TextView bodyView = (TextView) mRootView.findViewById(R.id.article_body);
 
 //        bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 
@@ -207,7 +222,6 @@ public class ArticleDetailFragment extends Fragment
             mRootView.setVisibility(View.GONE);
             titleView.setText("N/A");
             bylineView.setText("N/A");
-            bodyView.setText("N/A");
         }
     }
 
