@@ -12,5 +12,9 @@
     <dimen name="fab_elevation">6dp</dimen>
     <dimen name="fab_margin">24dp</dimen>
     <dimen name="toolbar_elevation">4dp</dimen>
+    <dimen name="elevation_snackbar">6dp</dimen>
+    <dimen name="elevation_appbar">4dp</dimen>
+
+
 
 </resources>
