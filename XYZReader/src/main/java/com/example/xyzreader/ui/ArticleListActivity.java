@@ -1,18 +1,21 @@
 package com.example.xyzreader.ui;
 
-import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Color;
+
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.Loader;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -36,14 +39,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+
 /**
  * An activity representing a list of Articles. This activity has different presentations for
  * handset and tablet-size devices. On handsets, the activity presents a list of items, which when
  * touched, lead to a {@link ArticleDetailActivity} representing item details. On tablets, the
  * activity presents a grid of items as cards.
  */
-public class ArticleListActivity extends AppCompatActivity
-        implements LoaderManager.LoaderCallbacks<Cursor>, SelectedArticleCallback{
+public class ArticleListActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, SelectedArticleCallback{
 
     private static final String TAG = ArticleListActivity.class.toString();
     private Toolbar mToolbar;
@@ -79,7 +82,7 @@ public class ArticleListActivity extends AppCompatActivity
         });
         emptyState = findViewById(R.id.empty_state);
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        getLoaderManager().initLoader(0, null, this);
+        getSupportLoaderManager().initLoader(0, null, this);
 
         if (savedInstanceState == null) {
             refresh();
@@ -169,9 +172,12 @@ public class ArticleListActivity extends AppCompatActivity
     }
 
     @Override
-    public void onSelectedArticle(Uri uri, long selectedArticle, View photo) {
+    public void onSelectedArticle(Uri uri, long vhPosition, View photo) {
 
-        Log.d(TAG, "David: " + "onSelectedArticle() called with: uri = [" + uri + "], selectedArticle = [" + selectedArticle + "], photo = [" + photo + "]");
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        intent.putExtra(ArticleDetailActivity.EXTRA_ARTICLE_INDEX, vhPosition);
+        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, photo, uri.toString());
+        startActivity(intent, options.toBundle());
     }
 
     private class Adapter extends RecyclerView.Adapter<ViewHolder> {
@@ -195,15 +201,16 @@ public class ArticleListActivity extends AppCompatActivity
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = getLayoutInflater().inflate(R.layout.list_item_article, parent, false);
-            final ViewHolder vh = new ViewHolder(view);
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    startActivity(new Intent(Intent.ACTION_VIEW,
-                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition()))));
-                }
-            });
-            return vh;
+           return new ViewHolder(view);
+//            final ViewHolder vh = new ViewHolder(view);
+//            view.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    startActivity(new Intent(Intent.ACTION_VIEW,
+//                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition()))));
+//                }
+//            });
+//            return vh;
         }
 
         private Date parsePublishedDate() {
@@ -245,6 +252,19 @@ public class ArticleListActivity extends AppCompatActivity
                     mCursor.getString(ArticleLoader.Query.THUMB_URL),
                     ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader());
             holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
+
+            int adapterPosition=  holder.getAdapterPosition();
+            final long holderPosition = getItemId(adapterPosition);
+            final Uri uri = ItemsContract.Items.buildItemUri(holderPosition);
+            final View photo = holder.thumbnailView;
+            ViewCompat.setTransitionName(holder.thumbnailView, uri.toString());
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    SelectedArticleCallback callback = callBackWeakReference.get();
+                    callback.onSelectedArticle(uri, holderPosition, photo);
+                }
+            });
         }
 
         @Override
